@@ -16,13 +16,13 @@ class bcolors:
   BOLD = '\033[1m'
   UNDERLINE = '\033[4m'
 
-def obs_to_state(obs, info):
+def obs_to_state(obs, goal):
   """
   This function converts observation into state
   Args: 
     obs: [x, y, v_x, v_y, cos(theta), sin(theta), theta_dot]
         theta= robot orientation, alpha= angle between r->g and x-axis
-    info: {"goal_position", ...}
+    goal: info["goal_position"]
   Returns:
     state: [r_norm, p_norm, alpha, alpha_dot, beta, beta_dot]
       r_norm: distance from map origin to robot
@@ -33,7 +33,7 @@ def obs_to_state(obs, info):
   """
   # compute states
   r = obs[:2]
-  p = info["goal_position"] - obs[:2]
+  p = goal - obs[:2]
   r_norm = np.linalg.norm(r) # sqrt(x^2+y^2)
   p_norm = np.linalg.norm(p)
   alpha = np.arctan2(obs[1], obs[0])

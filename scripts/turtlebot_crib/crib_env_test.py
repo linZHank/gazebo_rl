@@ -15,6 +15,7 @@ from gazebo_msgs.msg import ModelStates, LinkStates
 
 # import our training environment
 from envs import crib_nav_task_env # need write task env
+from utils import obs_to_state
 
 rospy.init_node('env_test', anonymous=True, log_level=rospy.DEBUG)    
 env = gym.make('CribNav-v0')

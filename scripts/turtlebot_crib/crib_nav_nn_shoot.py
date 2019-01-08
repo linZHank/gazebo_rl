@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 
 import envs.crib_nav_task_env
 import utils
-from utils import bcolors
+from utils import bcolors, obs_to_state
 
 tf.enable_eager_execution()
 
@@ -39,32 +39,6 @@ def grad(model, inputs, targets):
     loss_value = loss(model, inputs, targets)
   return loss_value, tape.gradient(loss_value, model.trainable_variables)
 
-def obs_to_state(obs, info):
-  """
-  This function converts observation into state
-  Args: 
-    obs: [x, y, v_x, v_y, cos(ori), sin(ori), v_ori]
-    info: {"goal_position", ...}
-  Returns:
-    state: [dx, dy, v_x, v_y, cos(ori), sin(ori), v_ori, cos(goal), sin(goal)]
-  """
-  # create state based on obs
-  state = np.zeros(obs.shape[0]+2)
-  state[:obs.shape[0]] = obs
-  # compute angle(theta) between vector of "robot to goal" and "x-axis" of world
-  robot_position = obs[:2]
-  goal_position = info["goal_position"]
-  vec_x = np.array([1, 0])
-  vec_y = np.array([0, 1])
-  vec_r2g = goal_position - robot_position
-  cos_theta = np.dot(vec_r2g, vec_x) / (np.linalg.norm(vec_r2g)*np.linalg.norm(vec_x))
-  sin_theta = np.dot(vec_r2g, vec_y) / (np.linalg.norm(vec_r2g)*np.linalg.norm(vec_y))
-  # append new states
-  state[:2] = info["goal_position"] - obs[:2] # distance
-  state[-2:] = [cos_theta, sin_theta]
-  state = state.astype(np.float32)
-
-  return state
 
 def generate_action_sequences(num_sequences, len_horizon, env):
   """ 

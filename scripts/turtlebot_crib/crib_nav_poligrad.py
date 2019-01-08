@@ -36,7 +36,19 @@ if __name__ == "__main__":
   rospy.init_node("crib_nav_vpg", anonymous=True, log_level=rospy.WARN)
   env_name = 'CribNav-v0'
   env = gym.make(env_name)
+  state_dim = obs_to_state(np.random.rand(env.observation_space.shape[0]), np.random.rand(2)).shape[0]
+  num_actions = env.action_space.shape[0]
   rospy.loginfo("CribNav environment set")
+
+  # make placeholders
+  state_ph = tf.placeholder(shape=(None, state_dim), dtype=tf.float32)
+  logits = mlp(obs_ph, sizes=hidden_layer_size+[num_actions])
+  actions = tf.squeeze(tf.multinomial(logits=logits,num_samples=1), axis=1)
+  weights_ph = tf.placeholder(shape=(None,), dtype=tf.float32)
+  act_ph = tf.placeholder(shape=(None,), dtype=tf.int32)
+  action_masks = tf.one_hot(act_ph, num_actions)
+  log_probs = tf.reduce_sum(action_masks * tf.nn.log_softmax(logits), axis=1)
+  loss = -tf.reduce_mean(weights_ph * log_probs)
 
   for ep in range(num_episodes):
     obs, info = env.reset()
@@ -52,12 +64,5 @@ if __name__ == "__main__":
     done = False
     episode_reward = []
     for st in range(num_steps):
-      batch_state.append(state.copy())
-      action = sess.run(actions, feed_dict={state_ph: state[None,:]})[0]
-    if not action:
-      act = np.array([env.action_space.high[0], env.action_space.low[1]]) # id=0 => [high_lin, low_ang]
-    else:
-      act = env.action_space.high # id=1 => [high_lin, high_ang]
-    print(bcolors.WARNING, "action: {}".format(act), bcolors.ENDC)
-    obs, rew, done, info = env.step(act)
-    state = obs_to_state(obs, info)    
+      
+      
