@@ -67,7 +67,7 @@ def train(env_name='CribNav-v0', hidden_sizes=[32], lr=1e-2,
     batch_lens = [] # for measuring episode lengths
     # reset episode-specific variables
     obs, info = env.reset() # first obs comes from starting distribution
-    sta = obs_to_state(obs, info)
+    sta = obs_to_state(obs, info["goal_position"])
     done = False # signal from environment that episode is over
     ep_rews = [] # list for rewards accrued throughout ep
     # collect experience by acting in the environment with current policy
@@ -82,7 +82,7 @@ def train(env_name='CribNav-v0', hidden_sizes=[32], lr=1e-2,
         act = env.action_space.high # id=1 => [high_lin, high_ang]
       print(bcolors.WARNING, "action: {}".format(act), bcolors.ENDC)
       obs, rew, done, info = env.step(act)
-      sta = obs_to_state(obs, info)
+      sta = obs_to_state(obs, info["goal_position"])
       # save action, reward
       batch_acts.append(action)
       ep_rews.append(rew)
